@@ -77,3 +77,52 @@ project(':app') {
         enabled = false
     }
 }
+
+tasks.register('hello') {
+    group = 'автосалон'
+    description = 'Приветствие от автосалона на Gradle'
+    doLast {
+        println '''
+╔═══════════════════════════════════════════╗
+║       АВТОСАЛОН — GRADLE EDITION          ║
+║   Многомодульный проект • Java 21         ║
+║   Лабораторная работа №2 — Готово!        ║
+╚═══════════════════════════════════════════╝
+        '''
+    }
+}
+
+tasks.register('showCarsCount') {
+    group = 'автосалон'
+    description = 'Показывает, сколько машин будет в тестовых данных (зависит от профиля)'
+    doLast {
+        // Берём значение из манифеста последнего собранного jar (или дефолт)
+        def jar = file('app/build/libs/app.jar')
+        if (!jar.exists()) {
+            println "→ jar ещё не собран. Сначала выполни: gradlew :app:shadowJar"
+            return
+        }
+        def zis = new java.util.zip.ZipInputStream(new FileInputStream(jar))
+        def manifestEntry = zis.getNextEntry()
+        while (manifestEntry != null && !manifestEntry.name.endsWith('MANIFEST.MF')) {
+            manifestEntry = zis.getNextEntry()
+        }
+        if (manifestEntry != null) {
+            def manifest = new java.util.jar.Manifest(zis)
+            def count = manifest.mainAttributes.getValue('app-initial-cars') ?: '3'
+            println "В текущем fat-jar будет загружено тестовых автомобилей: $count шт."
+        } else {
+            println "В текущем fat-jar будет загружено тестовых автомобилей: 3 шт. (по умолчанию)"
+        }
+        zis.close()
+    }
+}
+
+tasks.register('runSalon', JavaExec) {
+    group = 'автосалон'
+    description = 'Собирает fat-jar и сразу запускает автосалон (одной командой!)'
+    dependsOn ':app:shadowJar'
+    classpath = files('app/build/libs/app.jar')
+    mainClass = 'by.gstu.project.Main'
+    standardInput = System.in
+}
