@@ -54,4 +54,29 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <!-- Профиль разработки -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <app.environment>РАЗРАБОТКА (DEV)</app.environment>
+                <app.initial.cars>3</app.initial.cars>
+                <app.welcome.message>Добро пожаловать в режим разработки!</app.welcome.message>
+            </properties>
+        </profile>
+
+        <!-- Продакшн-профиль -->
+        <profile>
+            <id>prod</id>
+            <properties>
+                <app.environment>ПРОДАКШН (PROD)</app.environment>
+                <app.initial.cars>10</app.initial.cars>
+                <app.welcome.message>Внимание! Запущен боевой режим автосалона.</app.welcome.message>
+            </properties>
+        </profile>
+    </profiles>
 </project>

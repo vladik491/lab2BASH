@@ -29,6 +29,11 @@
               <transformers>
                 <transformer>
                   <mainClass>by.gstu.project.Main</mainClass>
+                  <manifestEntries>
+                    <app-environment>${app.environment}</app-environment>
+                    <app-initial-cars>${app.initial.cars}</app-initial-cars>
+                    <app-welcome-message>${app.welcome.message}</app-welcome-message>
+                  </manifestEntries>
                 </transformer>
               </transformers>
               <filters>

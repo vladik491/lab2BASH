@@ -1,61 +1,117 @@
 package by.gstu.project;
 
-import java.util.Arrays;
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.jar.Manifest;
 
 public class Main {
+
+    private static String environment = "НЕИЗВЕСТНО";
+    private static String welcomeMessage = "";
+    private static int initialCarsCount = 3;
+
+    static {
+        try (InputStream is = Main.class.getResourceAsStream("/META-INF/MANIFEST.MF")) {
+            if (is != null) {
+                Manifest manifest = new Manifest(is);
+                var attrs = manifest.getMainAttributes();
+
+                String env = attrs.getValue("app-environment");
+                if (env != null && !env.isEmpty()) environment = env;
+
+                String welcome = attrs.getValue("app-welcome-message");
+                if (welcome != null && !welcome.isEmpty()) welcomeMessage = welcome;
+
+                String count = attrs.getValue("app-initial-cars");
+                if (count != null && !count.isEmpty()) {
+                    initialCarsCount = Integer.parseInt(count);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
     public static void main(String[] args) {
-        List<Car> cars = Arrays.asList(
-                new Car(1, "Toyota", "Camry", 2020, "Черный", 2500000, "A123BC77"),
-                new Car(2, "BMW", "X5", 2018, "Белый", 4500000, "E456KH99"),
-                new Car(3, "Toyota", "Corolla", 2015, "Синий", 1200000, "M789PT55"),
-                new Car(4, "Lada", "Vesta", 2023, "Красный", 950000, "O111OO22"),
-                new Car(5, "BMW", "X5", 2022, "Черный", 6800000, "K222KK33"),
-                new Car(6, "Toyota", "RAV4", 2019, "Серебристый", 2800000, "T555TT44"),
-                new Car(7, "Mercedes", "C-Class", 2021, "Серый", 3900000, "Y777YY66"),
-                new Car(8, "Lada", "Granta", 2017, "Зеленый", 550000, "H999HH88")
-        );
+        List<Car> cars = new ArrayList<>();
+        initializeTestData(cars);
 
         CarService service = new CarService(cars);
         Scanner scanner = new Scanner(System.in);
 
+        System.out.println("=== Автосалон ===");
+        System.out.println("Режим: " + environment);
+        if (!welcomeMessage.isEmpty()) {
+            System.out.println(welcomeMessage);
+        }
+        System.out.println("Загружено " + cars.size() + " тестовых автомобилей.\n");
+
         while (true) {
-            System.out.println("\n=== Автосалон ===");
             System.out.println("1. Автомобили заданной марки");
             System.out.println("2. Автомобили модели, эксплуатируемые > n лет");
             System.out.println("3. Автомобили заданного года, цена > указанной");
             System.out.println("0. Выход");
+            System.out.print("Выбор: ");
+
+            if (!scanner.hasNextInt()) {
+                scanner.nextLine();
+                System.out.println("Пожалуйста, введите число!\n");
+                continue;
+            }
+
             int choice = scanner.nextInt();
             scanner.nextLine();
 
-            if (choice == 0) break;
+            if (choice == 0) {
+                System.out.println("До свидания!");
+                break;
+            }
 
-            List<Car> result = null;
             switch (choice) {
-                case 1:
+                case 1 -> {
                     System.out.print("Введите марку: ");
                     String brand = scanner.nextLine();
-                    result = service.findByBrand(brand);
-                    printResult(result, "Автомобили марки " + brand);
-                    break;
-                case 2:
+                    printResult(service.findByBrand(brand), "Автомобили марки " + brand);
+                }
+                case 2 -> {
                     System.out.print("Введите модель: ");
                     String model = scanner.nextLine();
                     System.out.print("Введите количество лет: ");
                     int years = scanner.nextInt();
-                    result = service.findByModelAndYears(model, years);
-                    printResult(result, "Автомобили модели " + model + " старше " + years + " лет");
-                    break;
-                case 3:
+                    printResult(service.findByModelAndYears(model, years),
+                            "Автомобили модели " + model + " старше " + years + " лет");
+                }
+                case 3 -> {
                     System.out.print("Введите год: ");
                     int year = scanner.nextInt();
                     System.out.print("Введите минимальную цену: ");
                     double price = scanner.nextDouble();
-                    result = service.findByYearAndPrice(year, price);
-                    printResult(result, "Автомобили " + year + " года дороже " + price);
-                    break;
+                    printResult(service.findByYearAndPrice(year, price),
+                            "Автомобили " + year + " года дороже " + price);
+                }
+                default -> System.out.println("Неверный выбор!");
             }
+            System.out.println();
+        }
+    }
+
+    private static void initializeTestData(List<Car> cars) {
+        for (int i = 1; i <= initialCarsCount; i++) {
+            cars.add(new Car(
+                    i,
+                    i % 2 == 0 ? "Toyota" : "BMW",
+                    i % 2 == 0 ? "Camry" : "X5",
+                    2020 + (i % 5),
+                    switch (i % 4) {
+                        case 0 -> "Черный";
+                        case 1 -> "Белый";
+                        case 2 -> "Синий";
+                        default -> "Красный";
+                    },
+                    1_500_000 + i * 350_000,
+                    String.format("A%03dBB77", i)
+            ));
         }
     }
 
@@ -64,9 +120,7 @@ public class Main {
         if (cars.isEmpty()) {
             System.out.println("Ничего не найдено.");
         } else {
-            for (Car car : cars) {
-                System.out.println(car);
-            }
+            cars.forEach(System.out::println);
         }
     }
 }
