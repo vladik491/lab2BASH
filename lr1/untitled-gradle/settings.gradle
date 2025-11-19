@@ -1,0 +1,4 @@
+rootProject.name = 'car-catalog-gradle'
+
+include 'core'
+include 'app'

@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1' apply false
+    id 'jacoco'
+}
+
+group = 'by.gstu.project'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = JavaVersion.VERSION_21
+
+repositories {
+    mavenCentral()
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'jacoco'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    }
+
+    test {
+        useJUnitPlatform()
+        finalizedBy jacocoTestReport
+    }
+
+    jacocoTestReport {
+        reports {
+            html.required = true
+            xml.required = true
+        }
+    }
+}
+
+project(':core') {
+    dependencies {
+        // только тесты
+    }
+}
+
+project(':app') {
+    apply plugin: 'com.github.johnrengelman.shadow'
+    apply plugin: 'application'
+
+    application {
+        mainClass = 'by.gstu.project.Main'
+    }
+
+    dependencies {
+        implementation project(':core')
+        implementation 'org.fusesource.jansi:jansi:2.4.2'
+    }
+
+    shadowJar {
+        archiveClassifier = null
+        mergeServiceFiles()
+        manifest {
+            attributes 'Main-Class': 'by.gstu.project.Main'
+        }
+    }
+
+    build.dependsOn shadowJar
+
+    tasks.named('jar') {
+        enabled = false
+    }
+}
