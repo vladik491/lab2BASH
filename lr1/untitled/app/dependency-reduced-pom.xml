@@ -11,9 +11,11 @@
     <plugins>
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
+        <version>3.5.1</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -21,6 +23,9 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <shadedArtifactAttached>true</shadedArtifactAttached>
+              <shadedClassifierName>shaded</shadedClassifierName>
+              <finalName>${project.artifactId}-${project.version}</finalName>
               <transformers>
                 <transformer>
                   <mainClass>by.gstu.project.Main</mainClass>
